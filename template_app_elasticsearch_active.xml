@@ -65,6 +65,48 @@ Template tooling version used: 0.35</description>
                </master_item>
             </item>
             <item>
+               <name>ES: Get cluster health</name>
+               <type>ZABBIX_ACTIVE</type>
+               <key>web.page.get[{$ELASTICSEARCH.HOST},_cluster/health?timeout=5s,{$ELASTICSEARCH.PORT}]</key>
+               <history>0</history>
+               <trends>0</trends>
+               <value_type>TEXT</value_type>
+               <description>Returns the health status of a cluster.</description>
+               <applications>
+                  <application>
+                     <name>Zabbix raw items</name>
+                  </application>
+               </applications>
+               <preprocessing>
+                  <step>
+                     <type>REGEX</type>
+                     <params>\n\s?\n(.*)
+\1</params>
+                  </step>
+               </preprocessing>
+            </item>
+            <item>
+               <name>ES: Get cluster stats</name>
+               <type>ZABBIX_ACTIVE</type>
+               <key>web.page.get[{$ELASTICSEARCH.HOST},_cluster/stats,{$ELASTICSEARCH.PORT}]</key>
+               <history>0</history>
+               <trends>0</trends>
+               <value_type>TEXT</value_type>
+               <description>Returns cluster statistics.</description>
+               <applications>
+                  <application>
+                     <name>Zabbix raw items</name>
+                  </application>
+               </applications>
+               <preprocessing>
+                  <step>
+                     <type>REGEX</type>
+                     <params>\n\s?\n(.*)
+\1</params>
+                  </step>
+               </preprocessing>
+            </item>
+            <item>
                <name>ES: Inactive shards percentage</name>
                <type>DEPENDENT</type>
                <key>es.cluster.inactive_shards_percent_as_number</key>
@@ -586,6 +628,27 @@ This is the actual amount of free disk space the selected Elasticsearch nodes ca
                </master_item>
             </item>
             <item>
+               <name>ES: Get nodes stats</name>
+               <type>ZABBIX_ACTIVE</type>
+               <key>web.page.get[{$ELASTICSEARCH.HOST},_nodes/stats,{$ELASTICSEARCH.PORT}]</key>
+               <history>0</history>
+               <trends>0</trends>
+               <value_type>TEXT</value_type>
+               <description>Returns cluster nodes statistics.</description>
+               <applications>
+                  <application>
+                     <name>Zabbix raw items</name>
+                  </application>
+               </applications>
+               <preprocessing>
+                  <step>
+                     <type>REGEX</type>
+                     <params>\n\s?\n(.*)
+\1</params>
+                  </step>
+               </preprocessing>
+            </item>
+            <item>
                <name>ES: Cluster uptime</name>
                <type>DEPENDENT</type>
                <key>es.nodes.jvm.max_uptime[{#ES.NODE}]</key>
@@ -680,69 +743,6 @@ This is the actual amount of free disk space the selected Elasticsearch nodes ca
                      <manual_close>YES</manual_close>
                   </trigger>
                </triggers>
-            </item>
-            <item>
-               <name>ES: Get cluster health</name>
-               <type>ZABBIX_ACTIVE</type>
-               <key>web.page.get[{$ELASTICSEARCH.HOST},_cluster/health?timeout=5s,{$ELASTICSEARCH.PORT}]</key>
-               <history>0</history>
-               <trends>0</trends>
-               <value_type>TEXT</value_type>
-               <description>Returns the health status of a cluster.</description>
-               <applications>
-                  <application>
-                     <name>Zabbix raw items</name>
-                  </application>
-               </applications>
-               <preprocessing>
-                  <step>
-                     <type>REGEX</type>
-                     <params>\n\s?\n(.*)
-\1</params>
-                  </step>
-               </preprocessing>
-            </item>
-            <item>
-               <name>ES: Get cluster stats</name>
-               <type>ZABBIX_ACTIVE</type>
-               <key>web.page.get[{$ELASTICSEARCH.HOST},_cluster/stats,{$ELASTICSEARCH.PORT}]</key>
-               <history>0</history>
-               <trends>0</trends>
-               <value_type>TEXT</value_type>
-               <description>Returns cluster statistics.</description>
-               <applications>
-                  <application>
-                     <name>Zabbix raw items</name>
-                  </application>
-               </applications>
-               <preprocessing>
-                  <step>
-                     <type>REGEX</type>
-                     <params>\n\s?\n(.*)
-\1</params>
-                  </step>
-               </preprocessing>
-            </item>
-            <item>
-               <name>ES: Get nodes stats</name>
-               <type>ZABBIX_ACTIVE</type>
-               <key>web.page.get[{$ELASTICSEARCH.HOST},_nodes/stats,{$ELASTICSEARCH.PORT}]</key>
-               <history>0</history>
-               <trends>0</trends>
-               <value_type>TEXT</value_type>
-               <description>Returns cluster nodes statistics.</description>
-               <applications>
-                  <application>
-                     <name>Zabbix raw items</name>
-                  </application>
-               </applications>
-               <preprocessing>
-                  <step>
-                     <type>REGEX</type>
-                     <params>\n\s?\n(.*)
-\1</params>
-                  </step>
-               </preprocessing>
             </item>
             <item>
                <name>ES: Get index settings</name>
@@ -971,32 +971,6 @@ and eventually prevent you from being able to add new information to your index.
                      </trigger_prototypes>
                   </item_prototype>
                   <item_prototype>
-                     <name>ES {#ES.NODE}: Total number of index flushes to disk</name>
-                     <type>DEPENDENT</type>
-                     <key>es.node.indices.flush.total[{#ES.NODE}]</key>
-                     <delay>0</delay>
-                     <history>7d</history>
-                     <description>The total number of flush operations.</description>
-                     <applications>
-                        <application>
-                           <name>Zabbix raw items</name>
-                        </application>
-                     </applications>
-                     <preprocessing>
-                        <step>
-                           <type>JSONPATH</type>
-                           <params>$..[?(@.name=='{#ES.NODE}')].indices.flush.total.first()</params>
-                        </step>
-                        <step>
-                           <type>DISCARD_UNCHANGED_HEARTBEAT</type>
-                           <params>1h</params>
-                        </step>
-                     </preprocessing>
-                     <master_item>
-                        <key>web.page.get[{$ELASTICSEARCH.HOST},_nodes/stats,{$ELASTICSEARCH.PORT}]</key>
-                     </master_item>
-                  </item_prototype>
-                  <item_prototype>
                      <name>ES {#ES.NODE}: Total time spent on flushing indices to disk</name>
                      <type>DEPENDENT</type>
                      <key>es.node.indices.flush.total_time_in_millis[{#ES.NODE}]</key>
@@ -1013,6 +987,32 @@ and eventually prevent you from being able to add new information to your index.
                         <step>
                            <type>JSONPATH</type>
                            <params>$..[?(@.name=='{#ES.NODE}')].indices.flush.total_time_in_millis.first()</params>
+                        </step>
+                        <step>
+                           <type>DISCARD_UNCHANGED_HEARTBEAT</type>
+                           <params>1h</params>
+                        </step>
+                     </preprocessing>
+                     <master_item>
+                        <key>web.page.get[{$ELASTICSEARCH.HOST},_nodes/stats,{$ELASTICSEARCH.PORT}]</key>
+                     </master_item>
+                  </item_prototype>
+                  <item_prototype>
+                     <name>ES {#ES.NODE}: Total number of index flushes to disk</name>
+                     <type>DEPENDENT</type>
+                     <key>es.node.indices.flush.total[{#ES.NODE}]</key>
+                     <delay>0</delay>
+                     <history>7d</history>
+                     <description>The total number of flush operations.</description>
+                     <applications>
+                        <application>
+                           <name>Zabbix raw items</name>
+                        </application>
+                     </applications>
+                     <preprocessing>
+                        <step>
+                           <type>JSONPATH</type>
+                           <params>$..[?(@.name=='{#ES.NODE}')].indices.flush.total.first()</params>
                         </step>
                         <step>
                            <type>DISCARD_UNCHANGED_HEARTBEAT</type>
@@ -1303,34 +1303,6 @@ recommends starting with a bulk indexing size of 5 to 15 megabytes and increasin
                      </master_item>
                   </item_prototype>
                   <item_prototype>
-                     <name>ES {#ES.NODE}: Rate of fetch</name>
-                     <type>DEPENDENT</type>
-                     <key>es.node.indices.search.fetch.rate[{#ES.NODE}]</key>
-                     <delay>0</delay>
-                     <history>7d</history>
-                     <value_type>FLOAT</value_type>
-                     <units>rps</units>
-                     <description>The number of fetch operations per second.</description>
-                     <application_prototypes>
-                        <application_prototype>
-                           <name>ES {#ES.NODE}</name>
-                        </application_prototype>
-                     </application_prototypes>
-                     <preprocessing>
-                        <step>
-                           <type>JSONPATH</type>
-                           <params>$..[?(@.name=='{#ES.NODE}')].indices.search.fetch_total.first()</params>
-                        </step>
-                        <step>
-                           <type>CHANGE_PER_SECOND</type>
-                           <params/>
-                        </step>
-                     </preprocessing>
-                     <master_item>
-                        <key>web.page.get[{$ELASTICSEARCH.HOST},_nodes/stats,{$ELASTICSEARCH.PORT}]</key>
-                     </master_item>
-                  </item_prototype>
-                  <item_prototype>
                      <name>ES {#ES.NODE}: Current fetch operations</name>
                      <type>DEPENDENT</type>
                      <key>es.node.indices.search.fetch_current[{#ES.NODE}]</key>
@@ -1382,6 +1354,33 @@ or requesting too many results.</description>
                      </trigger_prototypes>
                   </item_prototype>
                   <item_prototype>
+                     <name>ES {#ES.NODE}: Total time spent performing fetch</name>
+                     <type>DEPENDENT</type>
+                     <key>es.node.indices.search.fetch_time_in_millis[{#ES.NODE}]</key>
+                     <delay>0</delay>
+                     <history>7d</history>
+                     <units>ms</units>
+                     <description>Time in milliseconds spent performing fetch operations.</description>
+                     <applications>
+                        <application>
+                           <name>Zabbix raw items</name>
+                        </application>
+                     </applications>
+                     <preprocessing>
+                        <step>
+                           <type>JSONPATH</type>
+                           <params>$..[?(@.name=='{#ES.NODE}')].indices.search.fetch_time_in_millis.first()</params>
+                        </step>
+                        <step>
+                           <type>DISCARD_UNCHANGED_HEARTBEAT</type>
+                           <params>1h</params>
+                        </step>
+                     </preprocessing>
+                     <master_item>
+                        <key>web.page.get[{$ELASTICSEARCH.HOST},_nodes/stats,{$ELASTICSEARCH.PORT}]</key>
+                     </master_item>
+                  </item_prototype>
+                  <item_prototype>
                      <name>ES {#ES.NODE}: Time spent performing fetch</name>
                      <type>DEPENDENT</type>
                      <key>es.node.indices.search.fetch_time[{#ES.NODE}]</key>
@@ -1407,33 +1406,6 @@ or requesting too many results.</description>
                         <step>
                            <type>SIMPLE_CHANGE</type>
                            <params/>
-                        </step>
-                        <step>
-                           <type>DISCARD_UNCHANGED_HEARTBEAT</type>
-                           <params>1h</params>
-                        </step>
-                     </preprocessing>
-                     <master_item>
-                        <key>web.page.get[{$ELASTICSEARCH.HOST},_nodes/stats,{$ELASTICSEARCH.PORT}]</key>
-                     </master_item>
-                  </item_prototype>
-                  <item_prototype>
-                     <name>ES {#ES.NODE}: Total time spent performing fetch</name>
-                     <type>DEPENDENT</type>
-                     <key>es.node.indices.search.fetch_time_in_millis[{#ES.NODE}]</key>
-                     <delay>0</delay>
-                     <history>7d</history>
-                     <units>ms</units>
-                     <description>Time in milliseconds spent performing fetch operations.</description>
-                     <applications>
-                        <application>
-                           <name>Zabbix raw items</name>
-                        </application>
-                     </applications>
-                     <preprocessing>
-                        <step>
-                           <type>JSONPATH</type>
-                           <params>$..[?(@.name=='{#ES.NODE}')].indices.search.fetch_time_in_millis.first()</params>
                         </step>
                         <step>
                            <type>DISCARD_UNCHANGED_HEARTBEAT</type>
@@ -1471,14 +1443,14 @@ or requesting too many results.</description>
                      </master_item>
                   </item_prototype>
                   <item_prototype>
-                     <name>ES {#ES.NODE}: Rate of queries</name>
+                     <name>ES {#ES.NODE}: Rate of fetch</name>
                      <type>DEPENDENT</type>
-                     <key>es.node.indices.search.query.rate[{#ES.NODE}]</key>
+                     <key>es.node.indices.search.fetch.rate[{#ES.NODE}]</key>
                      <delay>0</delay>
                      <history>7d</history>
                      <value_type>FLOAT</value_type>
                      <units>rps</units>
-                     <description>The number of query operations per second.</description>
+                     <description>The number of fetch operations per second.</description>
                      <application_prototypes>
                         <application_prototype>
                            <name>ES {#ES.NODE}</name>
@@ -1487,15 +1459,39 @@ or requesting too many results.</description>
                      <preprocessing>
                         <step>
                            <type>JSONPATH</type>
-                           <params>$..[?(@.name=='{#ES.NODE}')].indices.search.query_total.first()</params>
+                           <params>$..[?(@.name=='{#ES.NODE}')].indices.search.fetch_total.first()</params>
                         </step>
                         <step>
                            <type>CHANGE_PER_SECOND</type>
                            <params/>
                         </step>
+                     </preprocessing>
+                     <master_item>
+                        <key>web.page.get[{$ELASTICSEARCH.HOST},_nodes/stats,{$ELASTICSEARCH.PORT}]</key>
+                     </master_item>
+                  </item_prototype>
+                  <item_prototype>
+                     <name>ES {#ES.NODE}: Rate of fetch</name>
+                     <type>DEPENDENT</type>
+                     <key>es.node.indices.search.fetch.rate[{#ES.NODE}]</key>
+                     <delay>0</delay>
+                     <history>7d</history>
+                     <value_type>FLOAT</value_type>
+                     <units>rps</units>
+                     <description>The number of fetch operations per second.</description>
+                     <application_prototypes>
+                        <application_prototype>
+                           <name>ES {#ES.NODE}</name>
+                        </application_prototype>
+                     </application_prototypes>
+                     <preprocessing>
                         <step>
-                           <type>DISCARD_UNCHANGED_HEARTBEAT</type>
-                           <params>1h</params>
+                           <type>JSONPATH</type>
+                           <params>$..[?(@.name=='{#ES.NODE}')].indices.search.fetch_total.first()</params>
+                        </step>
+                        <step>
+                           <type>CHANGE_PER_SECOND</type>
+                           <params/>
                         </step>
                      </preprocessing>
                      <master_item>
@@ -1553,6 +1549,33 @@ or requesting too many results.</description>
                      </trigger_prototypes>
                   </item_prototype>
                   <item_prototype>
+                     <name>ES {#ES.NODE}: Total time spent performing query</name>
+                     <type>DEPENDENT</type>
+                     <key>es.node.indices.search.query_time_in_millis[{#ES.NODE}]</key>
+                     <delay>0</delay>
+                     <history>7d</history>
+                     <units>ms</units>
+                     <description>Time in milliseconds spent performing query operations.</description>
+                     <applications>
+                        <application>
+                           <name>Zabbix raw items</name>
+                        </application>
+                     </applications>
+                     <preprocessing>
+                        <step>
+                           <type>JSONPATH</type>
+                           <params>$..[?(@.name=='{#ES.NODE}')].indices.search.query_time_in_millis.first()</params>
+                        </step>
+                        <step>
+                           <type>DISCARD_UNCHANGED_HEARTBEAT</type>
+                           <params>1h</params>
+                        </step>
+                     </preprocessing>
+                     <master_item>
+                        <key>web.page.get[{$ELASTICSEARCH.HOST},_nodes/stats,{$ELASTICSEARCH.PORT}]</key>
+                     </master_item>
+                  </item_prototype>
+                  <item_prototype>
                      <name>ES {#ES.NODE}: Time spent performing query</name>
                      <type>DEPENDENT</type>
                      <key>es.node.indices.search.query_time[{#ES.NODE}]</key>
@@ -1589,33 +1612,6 @@ or requesting too many results.</description>
                      </master_item>
                   </item_prototype>
                   <item_prototype>
-                     <name>ES {#ES.NODE}: Total time spent performing query</name>
-                     <type>DEPENDENT</type>
-                     <key>es.node.indices.search.query_time_in_millis[{#ES.NODE}]</key>
-                     <delay>0</delay>
-                     <history>7d</history>
-                     <units>ms</units>
-                     <description>Time in milliseconds spent performing query operations.</description>
-                     <applications>
-                        <application>
-                           <name>Zabbix raw items</name>
-                        </application>
-                     </applications>
-                     <preprocessing>
-                        <step>
-                           <type>JSONPATH</type>
-                           <params>$..[?(@.name=='{#ES.NODE}')].indices.search.query_time_in_millis.first()</params>
-                        </step>
-                        <step>
-                           <type>DISCARD_UNCHANGED_HEARTBEAT</type>
-                           <params>1h</params>
-                        </step>
-                     </preprocessing>
-                     <master_item>
-                        <key>web.page.get[{$ELASTICSEARCH.HOST},_nodes/stats,{$ELASTICSEARCH.PORT}]</key>
-                     </master_item>
-                  </item_prototype>
-                  <item_prototype>
                      <name>ES {#ES.NODE}: Total number of query</name>
                      <type>DEPENDENT</type>
                      <key>es.node.indices.search.query_total[{#ES.NODE}]</key>
@@ -1631,6 +1627,38 @@ or requesting too many results.</description>
                         <step>
                            <type>JSONPATH</type>
                            <params>$..[?(@.name=='{#ES.NODE}')].indices.search.query_total.first()</params>
+                        </step>
+                        <step>
+                           <type>DISCARD_UNCHANGED_HEARTBEAT</type>
+                           <params>1h</params>
+                        </step>
+                     </preprocessing>
+                     <master_item>
+                        <key>web.page.get[{$ELASTICSEARCH.HOST},_nodes/stats,{$ELASTICSEARCH.PORT}]</key>
+                     </master_item>
+                  </item_prototype>
+                  <item_prototype>
+                     <name>ES {#ES.NODE}: Rate of queries</name>
+                     <type>DEPENDENT</type>
+                     <key>es.node.indices.search.query.rate[{#ES.NODE}]</key>
+                     <delay>0</delay>
+                     <history>7d</history>
+                     <value_type>FLOAT</value_type>
+                     <units>rps</units>
+                     <description>The number of query operations per second.</description>
+                     <application_prototypes>
+                        <application_prototype>
+                           <name>ES {#ES.NODE}</name>
+                        </application_prototype>
+                     </application_prototypes>
+                     <preprocessing>
+                        <step>
+                           <type>JSONPATH</type>
+                           <params>$..[?(@.name=='{#ES.NODE}')].indices.search.query_total.first()</params>
+                        </step>
+                        <step>
+                           <type>CHANGE_PER_SECOND</type>
+                           <params/>
                         </step>
                         <step>
                            <type>DISCARD_UNCHANGED_HEARTBEAT</type>
