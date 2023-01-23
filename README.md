@@ -2,15 +2,15 @@
 
 ## Overview
 
-For Zabbix version: 5.0 and higher. 
+For Zabbix version: 5.0,6.0 and higher. 
 
-This template is based on the "Zabbix agent" version of the HTTP template shipped with Zabbix 5.0 (https://www.zabbix.com/integrations/elasticsearch)
-This version can connect to elasticsearch on localohost or a remote network using the zabbix-agent.
+These templates are based on the "Zabbix agent" version of the HTTP template shipped with Zabbix 5.0/6.0 (https://www.zabbix.com/integrations/elasticsearch)
+This version can connect to elasticsearch on localhost or a remote network using the zabbix-agent. (does not use simple checks!)
 The metrics are collected in one pass remotely using `web.page.get` and HTTP/HTTPS
 
 This template was tested on:
 
-- Zabbix, version 5.0
+- Zabbix, version 5.0, 6.0
 - Elasticsearch , version 6.x, 7.x
 
 Additionally to the original Zabbix template:
